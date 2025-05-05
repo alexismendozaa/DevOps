@@ -20,7 +20,7 @@ jobs:
         uses: docker/login-action@v2
         with:
           username: alexismendozaa
-          password: ${{ secrets.DOCKER_PASSWORD }}  # You can define your Docker Hub password here
+          password: ${{ secrets.DOCKER_PASSWORD }}  # Define your Docker Hub password in secrets
 
       - name: Build and push Docker image
         run: |
@@ -28,7 +28,7 @@ jobs:
           docker push alexismendozaa/ubuntu:latest
 
   deploy:
-    name: Deploy to Remote Server on main branch push
+    name: Deploy to Local Machine (Optional Step)
     runs-on: ubuntu-latest
     needs: build  # Ensure deployment only occurs after the build job is successful
 
@@ -36,19 +36,10 @@ jobs:
       - name: Checkout the files
         uses: actions/checkout@v2
 
-      - name: Execute Remote Commands on Server
-        uses: appleboy/ssh-action@master
-        with:
-          host: <REMOTE_HOST_IP>  # Replace with your server's IP address
-          username: <REMOTE_USER>  # Replace with your server's SSH username
-          key: ${{ secrets.SSH_PRIVATE_KEY }}  # You can define your SSH private key here
-          script: |
-            sudo apt-get -y update
-            sudo apt-get install -y apache2
-            sudo systemctl start apache2
-            sudo systemctl enable apache2
-            cd /home
-            sudo mv * /var/www/html
-            # Optionally restart your app or container
-            sudo docker pull alexismendozaa/ubuntu:latest
-            sudo docker run -d -p 80:80 alexismendozaa/ubuntu:latest
+      - name: Pull and Run Docker Container Locally
+        run: |
+          # Pull the latest Docker image from DockerHub
+          docker pull alexismendozaa/ubuntu:latest
+
+          # Run the Docker container locally
+          docker run -d -p 80:80 alexismendozaa/ubuntu:latest
